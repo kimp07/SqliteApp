@@ -8,7 +8,8 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.TYPE)
 @Retention(value = RetentionPolicy.RUNTIME)
 public @interface EntityObject {
-	
-	String query();
-	String countQuery();
+
+    String query();
+
+    String countQuery();
 }

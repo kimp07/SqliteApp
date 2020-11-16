@@ -1,5 +1,6 @@
 package org.alex.sqlite.entity;
 
+import org.alex.sqliteapp.db.Entity;
 import org.alex.sqliteapp.db.EntityField;
 import org.alex.sqliteapp.db.EntityObject;
 
@@ -7,7 +8,7 @@ import org.alex.sqliteapp.db.EntityObject;
 		query = "SELECT * FROM GOODS",
 		countQuery = "SELECT count(*) FROM GOODS"
 		)
-public class Good {
+public class Good implements Entity {
 
 	@EntityField(fieldName = "_id")
 	private Long id;
