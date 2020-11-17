@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.alex.sqlite.entity.Good;
 import org.alex.sqlite.entity.GoodDataTableModel;
 import org.alex.sqliteapp.db.DBConnection;
 

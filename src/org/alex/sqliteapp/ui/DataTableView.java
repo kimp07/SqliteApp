@@ -11,21 +11,21 @@ import org.alex.sqliteapp.db.DataTableModel;
 import javax.swing.table.DefaultTableModel;
 import org.alex.sqliteapp.util.EntityException;
 
-public class DataTableView<T> extends JPanel {
+public class DataTableView extends JPanel {
 
     /**
      *
      */
     private static final long serialVersionUID = -6001705584757283061L;
 
-    private final DataTableModel model;
+    private final transient DataTableModel<?> model;
     private JTable dataTable;
 
     /**
      * Create the panel.
      * @param model
      */
-    public DataTableView(DataTableModel model) {
+    public DataTableView(DataTableModel<?> model) {
         initGUI();        
         this.model = model;
     }
@@ -43,7 +43,7 @@ public class DataTableView<T> extends JPanel {
                     {null, null, null},
                     {null, null, null},},
                 new String[]{
-                    "New column", "New column", "New column"
+                    "", "", ""
                 }
         ));
         scrollPane.setViewportView(dataTable);

@@ -3,10 +3,13 @@ package org.alex.sqliteapp.db;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.table.DefaultTableModel;
@@ -20,7 +23,7 @@ public abstract class DataTableModel<T extends Object> {
     private static final Logger LOG = Logger.getLogger(DataTableModel.class);
     
     private final Class<T> entityClass;
-    private final int DEFAULT_VISIBLE_ROWS_COUNT = 100;
+    private static final int DEFAULT_VISIBLE_ROWS_COUNT = 100;
     //private final int CACHED_ROWS_COUNT = 15;
     private String querySelectAll;
     private String queryCountAll;
@@ -110,11 +113,11 @@ public abstract class DataTableModel<T extends Object> {
                     }
 
                 } catch (NoSuchMethodException | InvocationTargetException | NoSuchFieldException | IllegalAccessException | InstantiationException e) {
-                    LOG.log(Priority.ERROR, e.getMessage());
+                    LOG.log(Priority.ERROR, e);
                 }
             }
         } catch (SQLException e) {
-            LOG.log(Priority.ERROR, e.getMessage());
+            LOG.log(Priority.ERROR, e);
         }
     }
 
@@ -122,14 +125,26 @@ public abstract class DataTableModel<T extends Object> {
         String query = querySelectAll + " LIMIT " + visibleRowsCount;
         data.clear();
         Connection connection = DBConnection.getConnection();
-        try {
-            ResultSet rs = connection.prepareStatement(queryCountAll).executeQuery();
-            totalRowsCount = rs.getLong(1);
-            rs = connection.prepareStatement(query).executeQuery();
-            fillDataFromResultSet(rs, false);
-        } catch (SQLException e) {
-            LOG.log(Priority.ERROR, e.getMessage());
-        }
+        if (connection != null) {
+        	try (Statement statement = connection.createStatement()) {
+        		ResultSet resultSet = statement.executeQuery(queryCountAll);
+        		totalRowsCount = resultSet.getLong(1);
+        	} catch (SQLException e) {
+        		LOG.log(Priority.ERROR, e);
+        	}
+        	try (Statement statement = connection.createStatement()) {
+        		ResultSet resultSet = statement.executeQuery(query);
+        		fillDataFromResultSet(resultSet, false);
+        	} catch (SQLException e) {
+        		LOG.log(Priority.ERROR, e);
+        	}
+        	try {
+        		connection.close();
+        	} catch (SQLException e) {
+        		LOG.log(Priority.ERROR, e);
+        	}
+        	
+        }        
     }
 
     public int getVisibleRowsCount() {
@@ -152,7 +167,7 @@ public abstract class DataTableModel<T extends Object> {
         return entityClass;
     }
 
-    public ArrayList<T> getData() {
+    public List<T> getData() {
         return data;
     }
 
