@@ -5,22 +5,24 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.table.DefaultTableModel;
 
-import org.alex.sqliteapp.util.EntityException;
+import org.alex.sqliteapp.util.EntityThrowable;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
 
 public abstract class DataTableModel<T extends Object> {
     
     private static final Logger LOG = Logger.getLogger(DataTableModel.class);
     
     private final Class<T> entityClass;
-    private final int DEFAULT_VISIBLE_ROWS_COUNT = 100;
+    private static final int DEFAULT_VISIBLE_ROWS_COUNT = 100;
     //private final int CACHED_ROWS_COUNT = 15;
     private String querySelectAll;
     private String queryCountAll;
@@ -37,20 +39,20 @@ public abstract class DataTableModel<T extends Object> {
         this.currentFirstRowNumber = 0;
     }
 
-    public void initializeData() throws EntityException {
+    public void initializeData() throws EntityThrowable {
         querySelectAll = "";
         queryCountAll = "";
         if (entityClass.isAnnotationPresent(EntityObject.class)) {
             querySelectAll = entityClass.getAnnotation(EntityObject.class).query();
             queryCountAll = entityClass.getAnnotation(EntityObject.class).countQuery();
-            if (querySelectAll == null || querySelectAll.isEmpty()) {
-                throw new EntityException("Query `SELECT ALL` is empty");
+            if (querySelectAll.isEmpty()) {
+                throw new EntityThrowable("Query `SELECT ALL` is empty");
             }
-            if (queryCountAll == null || queryCountAll.isEmpty()) {
-                throw new EntityException("Query `SELECT count(*) ALL` is empty");
+            if (queryCountAll.isEmpty()) {
+                throw new EntityThrowable("Query `SELECT count(*) ALL` is empty");
             }
         } else {
-            throw new EntityException(entityClass.getCanonicalName() + " is not @EntityObject");
+            throw new EntityThrowable(entityClass.getCanonicalName() + " is not @EntityObject");
         }
         entityFields = new HashMap<>();
         for (Field field : entityClass.getDeclaredFields()) {
@@ -63,7 +65,7 @@ public abstract class DataTableModel<T extends Object> {
             }
         }
         if (entityFields.isEmpty()) {
-            throw new EntityException(entityClass.getCanonicalName() + " has no fields annotated @EntityField");
+            throw new EntityThrowable(entityClass.getCanonicalName() + " has no fields annotated @EntityField");
         }
         data = new ArrayList<>();
         readData();
@@ -110,11 +112,11 @@ public abstract class DataTableModel<T extends Object> {
                     }
 
                 } catch (NoSuchMethodException | InvocationTargetException | NoSuchFieldException | IllegalAccessException | InstantiationException e) {
-                    LOG.log(Priority.ERROR, e.getMessage());
+                    LOG.log(Level.ERROR, e);
                 }
             }
         } catch (SQLException e) {
-            LOG.log(Priority.ERROR, e.getMessage());
+            LOG.log(Level.ERROR, e);
         }
     }
 
@@ -122,14 +124,26 @@ public abstract class DataTableModel<T extends Object> {
         String query = querySelectAll + " LIMIT " + visibleRowsCount;
         data.clear();
         Connection connection = DBConnection.getConnection();
-        try {
-            ResultSet rs = connection.prepareStatement(queryCountAll).executeQuery();
-            totalRowsCount = rs.getLong(1);
-            rs = connection.prepareStatement(query).executeQuery();
-            fillDataFromResultSet(rs, false);
-        } catch (SQLException e) {
-            LOG.log(Priority.ERROR, e.getMessage());
-        }
+        if (connection != null) {
+        	try (Statement statement = connection.createStatement()) {
+        		ResultSet resultSet = statement.executeQuery(queryCountAll);
+        		totalRowsCount = resultSet.getLong(1);
+        	} catch (SQLException e) {
+        		LOG.log(Level.ERROR, e);
+        	}
+        	try (Statement statement = connection.createStatement()) {
+        		ResultSet resultSet = statement.executeQuery(query);
+        		fillDataFromResultSet(resultSet, false);
+        	} catch (SQLException e) {
+        		LOG.log(Level.ERROR, e);
+        	}
+        	try {
+        		connection.close();
+        	} catch (SQLException e) {
+        		LOG.log(Level.ERROR, e);
+        	}
+        	
+        }        
     }
 
     public int getVisibleRowsCount() {
@@ -152,7 +166,7 @@ public abstract class DataTableModel<T extends Object> {
         return entityClass;
     }
 
-    public ArrayList<T> getData() {
+    public List<T> getData() {
         return data;
     }
 
