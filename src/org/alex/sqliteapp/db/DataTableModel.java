@@ -70,7 +70,7 @@ public abstract class DataTableModel<T extends Object> {
             int index = 0;
             while (rs.next()) {
                 try {
-                    T entityObject = (T) entityClass.getConstructor().newInstance();
+                    T entityObject = entityClass.getConstructor().newInstance();
                     for (Map.Entry<String, String> entry : entityFields.entrySet()) {
                         String fieldName = entry.getKey();
                         String fieldDbName = entry.getValue();
