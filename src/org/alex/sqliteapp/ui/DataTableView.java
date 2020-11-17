@@ -9,7 +9,7 @@ import javax.swing.JTable;
 import org.alex.sqliteapp.db.DataTableModel;
 
 import javax.swing.table.DefaultTableModel;
-import org.alex.sqliteapp.util.EntityException;
+import org.alex.sqliteapp.util.EntityThrowable;
 
 public class DataTableView extends JPanel {
 
@@ -53,7 +53,7 @@ public class DataTableView extends JPanel {
     public void reloadDataTable() {
         try {
             model.initializeData();
-        } catch (EntityException e) {            
+        } catch (EntityThrowable e) {            
         }
         
         dataTable.setModel(model.getModel());

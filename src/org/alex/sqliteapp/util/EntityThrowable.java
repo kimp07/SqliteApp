@@ -1,19 +1,19 @@
 package org.alex.sqliteapp.util;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
 
-public class EntityException extends Throwable {
+public class EntityThrowable extends Throwable {
     
-    private static final Logger LOG = Logger.getLogger(EntityException.class);
+    private static final Logger LOG = Logger.getLogger(EntityThrowable.class);
     
     private static final long serialVersionUID = 2365196355156732835L;
     private final String errorMessage;    
     
-    public EntityException(String errorMessage) {
+    public EntityThrowable(String errorMessage) {
         super();
         this.errorMessage = errorMessage;
-        LOG.log(Priority.ERROR, errorMessage);
+        LOG.log(Level.ERROR, errorMessage);
     }
 
     @Override
