@@ -1,7 +1,7 @@
 package org.alex.sqliteapp.db;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,7 +15,7 @@ import org.alex.sqliteapp.util.EntityException;
 
 public abstract class DataTableModel<T extends Object> {
 
-    private Class<T> entityClass;
+    private final Class<T> entityClass;
     private final int DEFAULT_VISIBLE_ROWS_COUNT = 100;
     //private final int CACHED_ROWS_COUNT = 15;
     private String querySelectAll;
@@ -27,13 +27,13 @@ public abstract class DataTableModel<T extends Object> {
     private int currentFirstRowNumber;
     private int visibleRowsCount;
 
-    public DataTableModel() {        
+    public DataTableModel(Class<T> entityClass) {
+        this.entityClass = entityClass;
         this.visibleRowsCount = DEFAULT_VISIBLE_ROWS_COUNT;
         this.currentFirstRowNumber = 0;
     }
 
     public void initializeData() throws EntityException {
-        entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
         querySelectAll = "";
         queryCountAll = "";
         if (entityClass.isAnnotationPresent(EntityObject.class)) {
@@ -70,7 +70,7 @@ public abstract class DataTableModel<T extends Object> {
             int index = 0;
             while (rs.next()) {
                 try {
-                    T entityObject = (T) entityClass.newInstance();
+                    T entityObject = (T) entityClass.getConstructor().newInstance();
                     for (Map.Entry<String, String> entry : entityFields.entrySet()) {
                         String fieldName = entry.getKey();
                         String fieldDbName = entry.getValue();
@@ -105,7 +105,7 @@ public abstract class DataTableModel<T extends Object> {
                         data.add(index++, entityObject);
                     }
 
-                } catch (NoSuchFieldException | IllegalAccessException | InstantiationException e) {
+                } catch (NoSuchMethodException | InvocationTargetException | NoSuchFieldException | IllegalAccessException | InstantiationException e) {
                 }
             }
         } catch (SQLException e) {

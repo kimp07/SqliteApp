@@ -5,10 +5,14 @@ import org.alex.sqliteapp.db.DataTableModel;
 /**
  *
  * @author zamdirit
- * @param <Good>
+ * 
  */
-public class GoodDataTableModel<Good> extends DataTableModel<Good> {
+public class GoodDataTableModel extends DataTableModel<Good> {
 
+    public GoodDataTableModel() {
+        super(Good.class);
+    }
+    
     @Override
     public void scrollData() {
         
