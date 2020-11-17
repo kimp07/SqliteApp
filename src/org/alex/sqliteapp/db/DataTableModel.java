@@ -12,9 +12,13 @@ import java.util.Map;
 import javax.swing.table.DefaultTableModel;
 
 import org.alex.sqliteapp.util.EntityException;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
 
 public abstract class DataTableModel<T extends Object> {
-
+    
+    private static final Logger LOG = Logger.getLogger(DataTableModel.class);
+    
     private final Class<T> entityClass;
     private final int DEFAULT_VISIBLE_ROWS_COUNT = 100;
     //private final int CACHED_ROWS_COUNT = 15;
@@ -106,9 +110,11 @@ public abstract class DataTableModel<T extends Object> {
                     }
 
                 } catch (NoSuchMethodException | InvocationTargetException | NoSuchFieldException | IllegalAccessException | InstantiationException e) {
+                    LOG.log(Priority.ERROR, e.getMessage());
                 }
             }
         } catch (SQLException e) {
+            LOG.log(Priority.ERROR, e.getMessage());
         }
     }
 
@@ -122,6 +128,7 @@ public abstract class DataTableModel<T extends Object> {
             rs = connection.prepareStatement(query).executeQuery();
             fillDataFromResultSet(rs, false);
         } catch (SQLException e) {
+            LOG.log(Priority.ERROR, e.getMessage());
         }
     }
 

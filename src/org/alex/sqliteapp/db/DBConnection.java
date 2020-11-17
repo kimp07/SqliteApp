@@ -13,7 +13,6 @@ public class DBConnection {
         try {
             Class.forName(org.sqlite.JDBC.class.getCanonicalName());
             connection = DriverManager.getConnection(CONNECTION_URL);
-
         } catch (ClassNotFoundException | SQLException e) {
             System.out.println(e.getMessage());
         }
