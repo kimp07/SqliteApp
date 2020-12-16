@@ -13,7 +13,9 @@ public class SqliteApp {
     public static void main(String[] args) {
         Connection conn = DBConnection.getConnection();
         try {
-            ResultSet rs = conn.prepareStatement("SELECT name FROM sqlite_master WHERE type ='table'").executeQuery();
+            ResultSet rs = conn
+                    .prepareStatement("SELECT name FROM sqlite_master WHERE type ='table'")
+                    .executeQuery();
             while (rs.next()) {
                 System.out.println(rs.getString(1));
             }
