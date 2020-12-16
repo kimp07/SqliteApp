@@ -22,7 +22,7 @@ public abstract class DataTableModel<T extends Object> {
     private static final Logger LOG = Logger.getLogger(DataTableModel.class);
 
     private final Class<T> entityClass;
-    private final List<String> columnTitles;
+    private Map<String, String> defaultColumnConfig;
     private static final int DEFAULT_VISIBLE_ROWS_COUNT = 300;
     //private final int CACHED_ROWS_COUNT = 15;
     private String querySelectAll;
@@ -34,16 +34,15 @@ public abstract class DataTableModel<T extends Object> {
     private int currentFirstRowNumber;
     private int visibleRowsCount;
 
-    public DataTableModel(Class<T> entityClass, List<String> columnTitles) {
+    public DataTableModel(Class<T> entityClass) {
         this.entityClass = entityClass;
         this.visibleRowsCount = DEFAULT_VISIBLE_ROWS_COUNT;
         this.currentFirstRowNumber = 0;
-        this.columnTitles = columnTitles;
     }
 
     public void initializeData() throws EntityThrowable {
         querySelectAll = "";
-        queryCountAll = "";
+        queryCountAll = "";        
         if (entityClass.isAnnotationPresent(EntityObject.class)) {
             querySelectAll = entityClass.getAnnotation(EntityObject.class).query();
             queryCountAll = entityClass.getAnnotation(EntityObject.class).countQuery();
@@ -179,7 +178,7 @@ public abstract class DataTableModel<T extends Object> {
     public DefaultTableModel getModel() {
 
         DefaultTableModel model = new DefaultTableModel();
-        model.setColumnIdentifiers(columnTitles.stream().toArray());
+        //model.setColumnIdentifiers(columnTitles.stream().toArray());
         try {
             T entityObject = entityClass.getConstructor().newInstance();
 
@@ -205,10 +204,17 @@ public abstract class DataTableModel<T extends Object> {
         }
         return model;
     }
-
-    public List<String> getColumnTitles() {
-        return columnTitles;
+    
+    public String[] getDefaultColumnNames() {
+        if (!entityFields.isEmpty()) {
+            String[] columnNames = new String[entityFields.size()];
+            for (Map.Entry<String, String> entry: entityFields.entrySet()) {
+                
+            }
+        }
+        
+        return null;
     }
-
+    
     public abstract void scrollData();
 }

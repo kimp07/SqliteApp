@@ -1,6 +1,7 @@
 package org.alex.sqliteapp.ui;
 
 import java.awt.BorderLayout;
+import java.util.List;
 import javax.swing.JFrame;
 
 import javax.swing.JScrollPane;
@@ -20,7 +21,7 @@ public class DataTableView extends JFrame {
 
     private final transient DataTableModel<?> model;
     private JTable dataTable;
-
+    private List<String> columnTitles;
     /**
      * Create the panel.
      *
@@ -54,6 +55,9 @@ public class DataTableView extends JFrame {
     public void reloadDataTable() {
         try {
             model.initializeData();
+            if (columnTitles == null) {
+                //columnTitles = model
+            }
         } catch (EntityThrowable e) {
         }
 
