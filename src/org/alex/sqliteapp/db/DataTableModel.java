@@ -18,11 +18,11 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 public abstract class DataTableModel<T extends Object> {
-    
+
     private static final Logger LOG = Logger.getLogger(DataTableModel.class);
-    
+
     private final Class<T> entityClass;
-    private static final int DEFAULT_VISIBLE_ROWS_COUNT = 100;
+    private static final int DEFAULT_VISIBLE_ROWS_COUNT = 300;
     //private final int CACHED_ROWS_COUNT = 15;
     private String querySelectAll;
     private String queryCountAll;
@@ -125,25 +125,25 @@ public abstract class DataTableModel<T extends Object> {
         data.clear();
         Connection connection = DBConnection.getConnection();
         if (connection != null) {
-        	try (Statement statement = connection.createStatement()) {
-        		ResultSet resultSet = statement.executeQuery(queryCountAll);
-        		totalRowsCount = resultSet.getLong(1);
-        	} catch (SQLException e) {
-        		LOG.log(Level.ERROR, e);
-        	}
-        	try (Statement statement = connection.createStatement()) {
-        		ResultSet resultSet = statement.executeQuery(query);
-        		fillDataFromResultSet(resultSet, false);
-        	} catch (SQLException e) {
-        		LOG.log(Level.ERROR, e);
-        	}
-        	try {
-        		connection.close();
-        	} catch (SQLException e) {
-        		LOG.log(Level.ERROR, e);
-        	}
-        	
-        }        
+            try (Statement statement = connection.createStatement()) {
+                ResultSet resultSet = statement.executeQuery(queryCountAll);
+                totalRowsCount = resultSet.getLong(1);
+            } catch (SQLException e) {
+                LOG.log(Level.ERROR, e);
+            }
+            try (Statement statement = connection.createStatement()) {
+                ResultSet resultSet = statement.executeQuery(query);
+                fillDataFromResultSet(resultSet, false);
+            } catch (SQLException e) {
+                LOG.log(Level.ERROR, e);
+            }
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                LOG.log(Level.ERROR, e);
+            }
+
+        }
     }
 
     public int getVisibleRowsCount() {

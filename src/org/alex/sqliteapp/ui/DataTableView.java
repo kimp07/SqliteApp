@@ -23,10 +23,11 @@ public class DataTableView extends JPanel {
 
     /**
      * Create the panel.
+     *
      * @param model
      */
     public DataTableView(DataTableModel<?> model) {
-        initGUI();        
+        initGUI();
         this.model = model;
     }
 
@@ -53,9 +54,9 @@ public class DataTableView extends JPanel {
     public void reloadDataTable() {
         try {
             model.initializeData();
-        } catch (EntityThrowable e) {            
+        } catch (EntityThrowable e) {
         }
-        
+
         dataTable.setModel(model.getModel());
     }
 

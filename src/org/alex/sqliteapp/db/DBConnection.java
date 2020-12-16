@@ -7,16 +7,16 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
- * 
+ *
  * @author zamdirit
  */
 public class DBConnection {
 
     private static Connection connection;
     private static final String CONNECTION_URL = "jdbc:sqlite:msalers.sqlite";
-    
+
     private static final Logger LOG = Logger.getLogger(DBConnection.class);
-    
+
     static {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -25,15 +25,16 @@ public class DBConnection {
             LOG.log(Level.ERROR, e);
         }
     }
-    
+
     /**
      * Constructor
      */
-    private DBConnection() {}
-    
+    private DBConnection() {
+    }
+
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     public static Connection getConnection() {
         return connection;

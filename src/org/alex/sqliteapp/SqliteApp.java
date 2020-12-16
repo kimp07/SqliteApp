@@ -4,9 +4,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.alex.sqlite.entity.Good;
 import org.alex.sqlite.entity.GoodDataTableModel;
 import org.alex.sqliteapp.db.DBConnection;
+import org.alex.sqliteapp.util.EntityThrowable;
 
 public class SqliteApp {
 
@@ -22,6 +22,20 @@ public class SqliteApp {
         }
 
         GoodDataTableModel tbl = new GoodDataTableModel();
+        Thread thread = new Thread(() -> {
+            try {
+                tbl.initializeData();
+            } catch (EntityThrowable e) {
+                System.out.println(e.getMessage());
+            }
+        });
+
+        thread.start();
+        String processVisual = "Loading data...";
+        do {
+            System.out.println(processVisual);
+        } while (thread.isAlive());
+
         System.out.println(tbl.getData().size());
 
     }
