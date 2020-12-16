@@ -22,21 +22,23 @@ public abstract class DataTableModel<T extends Object> {
     private static final Logger LOG = Logger.getLogger(DataTableModel.class);
 
     private final Class<T> entityClass;
+    private final List<String> columnTitles;
     private static final int DEFAULT_VISIBLE_ROWS_COUNT = 300;
     //private final int CACHED_ROWS_COUNT = 15;
     private String querySelectAll;
     private String queryCountAll;
 
-    private ArrayList<T> data;
-    private HashMap<String, String> entityFields;
+    private List<T> data;
+    private Map<String, String> entityFields;
     private long totalRowsCount;
     private int currentFirstRowNumber;
     private int visibleRowsCount;
 
-    public DataTableModel(Class<T> entityClass) {
+    public DataTableModel(Class<T> entityClass, List<String> columnTitles) {
         this.entityClass = entityClass;
         this.visibleRowsCount = DEFAULT_VISIBLE_ROWS_COUNT;
         this.currentFirstRowNumber = 0;
+        this.columnTitles = columnTitles;
     }
 
     public void initializeData() throws EntityThrowable {
@@ -175,7 +177,37 @@ public abstract class DataTableModel<T extends Object> {
     }
 
     public DefaultTableModel getModel() {
-        return null;
+
+        DefaultTableModel model = new DefaultTableModel();
+        model.setColumnIdentifiers(columnTitles.stream().toArray());
+        try {
+            T entityObject = entityClass.getConstructor().newInstance();
+
+            for (T item : data) {
+                Object[] row = new Object[entityFields.size()];
+                int pos = 0;
+                for (Map.Entry<String, String> fieldName : entityFields.entrySet()) {
+                    Field field = entityObject.getClass().getDeclaredField(fieldName.getKey());
+                    field.setAccessible(true);
+                    row[pos] = field.get(item);
+                    pos++;
+                }
+                model.addRow(row);
+            }
+        } catch (NoSuchMethodException e) {
+            LOG.error(e);
+        } catch (NoSuchFieldException e) {
+            LOG.error(e);
+        } catch (IllegalAccessException e) {
+            LOG.error(e);
+        } catch (InstantiationException | InvocationTargetException e) {
+            LOG.error(e);
+        }
+        return model;
+    }
+
+    public List<String> getColumnTitles() {
+        return columnTitles;
     }
 
     public abstract void scrollData();

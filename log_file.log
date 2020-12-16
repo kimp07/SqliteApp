@@ -1,0 +1,2 @@
+2020-12-16 11:33:00 ERROR DataTableModel:201 - java.lang.IllegalAccessException: Class org.alex.sqliteapp.db.DataTableModel can not access a member of class org.alex.sqlite.entity.Good with modifiers "private"
+2020-12-16 11:34:02 ERROR DataTableModel:201 - java.lang.IllegalAccessException: Class org.alex.sqliteapp.db.DataTableModel can not access a member of class org.alex.sqlite.entity.Good with modifiers "private"

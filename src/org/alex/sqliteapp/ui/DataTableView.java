@@ -1,8 +1,8 @@
 package org.alex.sqliteapp.ui;
 
 import java.awt.BorderLayout;
+import javax.swing.JFrame;
 
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
@@ -11,7 +11,7 @@ import org.alex.sqliteapp.db.DataTableModel;
 import javax.swing.table.DefaultTableModel;
 import org.alex.sqliteapp.util.EntityThrowable;
 
-public class DataTableView extends JPanel {
+public class DataTableView extends JFrame {
 
     /**
      *

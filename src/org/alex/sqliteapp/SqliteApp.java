@@ -3,10 +3,13 @@ package org.alex.sqliteapp;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JFrame;
 
 import org.alex.sqlite.entity.GoodDataTableModel;
 import org.alex.sqliteapp.db.DBConnection;
-import org.alex.sqliteapp.util.EntityThrowable;
+import org.alex.sqliteapp.ui.DataTableView;
 
 public class SqliteApp {
 
@@ -22,23 +25,29 @@ public class SqliteApp {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+        
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                List<String> titles = new ArrayList<>();
+                titles.add("id");
+                titles.add("Name");
+                titles.add("Description");
+                titles.add("Vat");
+                titles.add("Barcode");
 
-        GoodDataTableModel tbl = new GoodDataTableModel();
-        Thread thread = new Thread(() -> {
-            try {
-                tbl.initializeData();
-            } catch (EntityThrowable e) {
-                System.out.println(e.getMessage());
+                GoodDataTableModel tbl = new GoodDataTableModel(titles);
+                DataTableView tableView = new DataTableView(tbl);
+                tableView.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                tableView.reloadDataTable();
+                tableView.setVisible(true);
             }
         });
-
-        thread.start();
-        String processVisual = "Loading data...";
-        do {
-            System.out.println(processVisual);
-        } while (thread.isAlive());
-
-        System.out.println(tbl.getData().size());
+        
+        
+        
+        
+        //System.out.println(tbl.getData().size());
 
     }
 
