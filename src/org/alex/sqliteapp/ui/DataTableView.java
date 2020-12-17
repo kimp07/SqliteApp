@@ -1,7 +1,9 @@
 package org.alex.sqliteapp.ui;
 
 import java.awt.BorderLayout;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JFrame;
 
 import javax.swing.JScrollPane;
@@ -21,7 +23,8 @@ public class DataTableView extends JFrame {
 
     private final transient DataTableModel<?> model;
     private JTable dataTable;
-    private List<String> columnTitles;
+    private Map<String, String> columnTitles;
+    private List<String> columnNames;
     /**
      * Create the panel.
      *
@@ -56,12 +59,16 @@ public class DataTableView extends JFrame {
         try {
             model.initializeData();
             if (columnTitles == null) {
-                //columnTitles = model
+                columnTitles = new HashMap<>();
+                List<String> columnNames = model.getColumnNames();
+                for (String columnName : columnNames) {
+                    columnTitles.put(columnName, columnName);
+                }    
             }
         } catch (EntityThrowable e) {
         }
-
-        dataTable.setModel(model.getModel());
+        
+        dataTable.setModel(model.getModel());        
     }
 
 }
