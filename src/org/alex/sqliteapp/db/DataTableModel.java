@@ -22,7 +22,6 @@ public abstract class DataTableModel<T extends Object> {
     private static final Logger LOG = Logger.getLogger(DataTableModel.class);
 
     private final Class<T> entityClass;
-    private Map<String, String> defaultColumnConfig;
     private static final int DEFAULT_VISIBLE_ROWS_COUNT = 300;
     //private final int CACHED_ROWS_COUNT = 15;
     private String querySelectAll;
@@ -178,7 +177,7 @@ public abstract class DataTableModel<T extends Object> {
     public DefaultTableModel getModel() {
 
         DefaultTableModel model = new DefaultTableModel();
-        //model.setColumnIdentifiers(columnTitles.stream().toArray());
+        model.setColumnIdentifiers(getColumnNames().toArray());
         try {
             T entityObject = entityClass.getConstructor().newInstance();
 
@@ -193,6 +192,7 @@ public abstract class DataTableModel<T extends Object> {
                 }
                 model.addRow(row);
             }
+            
         } catch (NoSuchMethodException e) {
             LOG.error(e);
         } catch (NoSuchFieldException e) {
@@ -205,14 +205,14 @@ public abstract class DataTableModel<T extends Object> {
         return model;
     }
     
-    public String[] getDefaultColumnNames() {
+    public List<String> getColumnNames() {
         if (!entityFields.isEmpty()) {
-            String[] columnNames = new String[entityFields.size()];
+            List<String> columnNames = new ArrayList<>();
             for (Map.Entry<String, String> entry: entityFields.entrySet()) {
-                
+                columnNames.add(entry.getKey());
             }
+            return columnNames;
         }
-        
         return null;
     }
     
