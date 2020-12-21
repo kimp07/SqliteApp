@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -23,12 +24,17 @@ public abstract class DataTableModel<T extends Object> {
 
     private final Class<T> entityClass;
     private static final int DEFAULT_VISIBLE_ROWS_COUNT = 300;
-    //private final int CACHED_ROWS_COUNT = 15;
+    private final int CACHED_ROWS_COUNT = 100;
     private String querySelectAll;
     private String queryCountAll;
 
     private List<T> data;
+    private List<T> cachedData;
+    
     private Map<String, String> entityFields;
+    private List<String> modelColumns;
+    private List<String> columnsTitle;
+
     private long totalRowsCount;
     private int currentFirstRowNumber;
     private int visibleRowsCount;
@@ -41,7 +47,7 @@ public abstract class DataTableModel<T extends Object> {
 
     public void initializeData() throws EntityThrowable {
         querySelectAll = "";
-        queryCountAll = "";        
+        queryCountAll = "";
         if (entityClass.isAnnotationPresent(EntityObject.class)) {
             querySelectAll = entityClass.getAnnotation(EntityObject.class).query();
             queryCountAll = entityClass.getAnnotation(EntityObject.class).countQuery();
@@ -55,12 +61,16 @@ public abstract class DataTableModel<T extends Object> {
             throw new EntityThrowable(entityClass.getCanonicalName() + " is not @EntityObject");
         }
         entityFields = new HashMap<>();
+        modelColumns = new ArrayList<>();
+        columnsTitle = new ArrayList<>();
         for (Field field : entityClass.getDeclaredFields()) {
             if (field.isAnnotationPresent(EntityField.class)) {
                 String fieldName = field.getName();
                 String fieldDbName = field.getAnnotation(EntityField.class).fieldName().trim();
                 if (fieldName != null && !fieldName.isEmpty()) {
                     entityFields.put(fieldName, fieldDbName);
+                    modelColumns.add(fieldName);
+                    columnsTitle.add(fieldName);
                 }
             }
         }
@@ -68,10 +78,12 @@ public abstract class DataTableModel<T extends Object> {
             throw new EntityThrowable(entityClass.getCanonicalName() + " has no fields annotated @EntityField");
         }
         data = new ArrayList<>();
-        readData();
+        cachedData = new ArrayList<>();
     }
 
     private void fillDataFromResultSet(ResultSet rs, boolean insertTop) {
+        boolean isFirstLoadingData = data.isEmpty();
+        cachedData.clear();
         try {
             int index = 0;
             while (rs.next()) {
@@ -107,8 +119,19 @@ public abstract class DataTableModel<T extends Object> {
                     }
                     if (!insertTop) {
                         data.add(entityObject);
+                        index++;                        
+                        if (!isFirstLoadingData) {
+                            data.remove(0);
+                            currentFirstRowNumber++;
+                            cachedData.add(entityObject);
+                        }
                     } else {
                         data.add(index++, entityObject);
+                        if (!isFirstLoadingData) {
+                            data.remove(data.size() - 1);
+                            currentFirstRowNumber--;
+                            cachedData.add(entityObject);
+                        }
                     }
 
                 } catch (NoSuchMethodException | InvocationTargetException | NoSuchFieldException | IllegalAccessException | InstantiationException e) {
@@ -121,19 +144,23 @@ public abstract class DataTableModel<T extends Object> {
     }
 
     public void readData() {
-        String query = querySelectAll + " LIMIT " + visibleRowsCount;
+        String query = querySelectAll + " LIMIT 0," + visibleRowsCount;
         data.clear();
         Connection connection = DBConnection.getConnection();
         if (connection != null) {
             try (Statement statement = connection.createStatement()) {
                 ResultSet resultSet = statement.executeQuery(queryCountAll);
                 totalRowsCount = resultSet.getLong(1);
+                resultSet.close();
+                statement.close();
             } catch (SQLException e) {
                 LOG.log(Level.ERROR, e);
             }
             try (Statement statement = connection.createStatement()) {
                 ResultSet resultSet = statement.executeQuery(query);
                 fillDataFromResultSet(resultSet, false);
+                resultSet.close();
+                statement.close();
             } catch (SQLException e) {
                 LOG.log(Level.ERROR, e);
             }
@@ -141,6 +168,34 @@ public abstract class DataTableModel<T extends Object> {
                 connection.close();
             } catch (SQLException e) {
                 LOG.log(Level.ERROR, e);
+            }
+
+        }
+    }
+
+    public void scrollDataUp() {
+
+    }
+
+    public void scrollDataDown() {
+        if (currentFirstRowNumber + visibleRowsCount < totalRowsCount
+                && totalRowsCount > visibleRowsCount) {
+            long offset = currentFirstRowNumber + visibleRowsCount - 1;
+            String query = querySelectAll + " LIMIT " + offset + "," + CACHED_ROWS_COUNT;
+            Connection connection = DBConnection.getConnection();
+            try (Statement statement = connection.createStatement()) {
+                ResultSet resultSet = statement.executeQuery(query);
+                fillDataFromResultSet(resultSet, false);
+                statement.close();
+            } catch (SQLException e) {
+                LOG.log(Level.ERROR, e);
+                System.out.println(e.getMessage());
+            } finally {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    LOG.log(Level.ERROR, e);
+                }
             }
 
         }
@@ -177,25 +232,37 @@ public abstract class DataTableModel<T extends Object> {
     public DefaultTableModel getModel() {
 
         DefaultTableModel model = new DefaultTableModel();
-        model.setColumnIdentifiers(getColumnNames().toArray());
+        model.setColumnIdentifiers(columnsTitle.toArray());
         try {
             T entityObject = entityClass.getConstructor().newInstance();
 
             for (T item : data) {
                 Object[] row = new Object[entityFields.size()];
-                int pos = 0;
-                for (Map.Entry<String, String> fieldName : entityFields.entrySet()) {
-                    Field field = entityObject.getClass().getDeclaredField(fieldName.getKey());
-                    field.setAccessible(true);
-                    row[pos] = field.get(item);
-                    pos++;
+                modelColumns.forEach(new Consumer<String>() {
+                    int pos = 0;
+
+                    @Override
+                    public void accept(String modelColumn) {
+                        if (entityFields.containsKey(modelColumn)) {
+                            try {
+                                Field field = entityObject.getClass().getDeclaredField(modelColumn);
+                                field.setAccessible(true);
+                                row[pos] = field.get(item);
+                            } catch (NoSuchFieldException | IllegalAccessException e) {
+                                LOG.error(e);
+                                row[pos] = "";
+                            }
+                        } else {
+                            row[pos] = "";
+                        }
+                        pos++;
+                    }
                 }
+                );
                 model.addRow(row);
             }
-            
+
         } catch (NoSuchMethodException e) {
-            LOG.error(e);
-        } catch (NoSuchFieldException e) {
             LOG.error(e);
         } catch (IllegalAccessException e) {
             LOG.error(e);
@@ -205,16 +272,30 @@ public abstract class DataTableModel<T extends Object> {
         return model;
     }
     
-    public List<String> getColumnNames() {
-        if (!entityFields.isEmpty()) {
-            List<String> columnNames = new ArrayList<>();
-            for (Map.Entry<String, String> entry: entityFields.entrySet()) {
-                columnNames.add(entry.getKey());
-            }
-            return columnNames;
-        }
-        return null;
+    public List<String> getModelColumns() {
+        return modelColumns;
     }
-    
-    public abstract void scrollData();
+
+    public void setModelColumns(List<String> modelColumns) {
+        this.modelColumns = modelColumns;
+    }
+
+    public List<String> getColumnsTitle() {
+        return columnsTitle;
+    }
+
+    public void setColumnsTitle(List<String> columnsTitle) {
+        this.columnsTitle = columnsTitle;
+    }
+
+    public Object[][] getCachedData() {
+        if (cachedData.size() > 0) {
+            
+            Object[][] dataArray = new Object[cachedData.size()][modelColumns.size()];
+            
+        }
+        
+        return null;
+    }        
+
 }

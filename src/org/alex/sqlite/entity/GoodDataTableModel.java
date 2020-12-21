@@ -10,13 +10,8 @@ import org.alex.sqliteapp.db.DataTableModel;
  */
 public class GoodDataTableModel extends DataTableModel<Good> {
 
-    public GoodDataTableModel(List<String> columnTitles) {
+    public GoodDataTableModel() {
         super(Good.class);
-    }
-
-    @Override
-    public void scrollData() {
-
     }
 
 }

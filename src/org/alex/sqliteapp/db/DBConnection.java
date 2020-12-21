@@ -17,15 +17,6 @@ public class DBConnection {
 
     private static final Logger LOG = Logger.getLogger(DBConnection.class);
 
-    static {
-        try {
-            Class.forName("org.sqlite.JDBC");
-            connection = DriverManager.getConnection(CONNECTION_URL);
-        } catch (ClassNotFoundException | SQLException e) {
-            LOG.log(Level.ERROR, e);
-        }
-    }
-
     /**
      * Constructor
      */
@@ -37,6 +28,12 @@ public class DBConnection {
      * @return
      */
     public static Connection getConnection() {
+        try {
+            Class.forName("org.sqlite.JDBC");
+            connection = DriverManager.getConnection(CONNECTION_URL);
+        } catch (ClassNotFoundException | SQLException e) {
+            LOG.log(Level.ERROR, e);
+        }
         return connection;
     }
 }
