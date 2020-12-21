@@ -182,7 +182,7 @@ public abstract class AbstractDataTableModel<T extends Object> {
     private void fetchMoreModelData(DefaultTableModel model, boolean fetchTop) {
         try {
             T entityObject = entityClass.getConstructor().newInstance();
-
+            int topPos = 0;
             for (T item : cachedData) {
                 Object[] row = new Object[entityFields.size()];
                 modelColumns.forEach(new Consumer<String>() {
@@ -207,7 +207,8 @@ public abstract class AbstractDataTableModel<T extends Object> {
                 }
                 );
                 if (fetchTop) {
-                    
+                    model.insertRow(topPos++, row);
+                    model.removeRow(model.getRowCount() - 1);
                 } else {
                     model.removeRow(0);
                     model.addRow(row);
@@ -224,8 +225,33 @@ public abstract class AbstractDataTableModel<T extends Object> {
         }
         
     }
+
+    public boolean scrollDataUp(DefaultTableModel model, int rowsFetch) {
+        if (currentFirstRowNumber > 0) {
+            long offset = Math.max(currentFirstRowNumber - rowsFetch, 0);
+            String query = querySelectAll + " LIMIT " + offset + "," + rowsFetch;
+            Connection connection = DBConnection.getConnection();
+            try (Statement statement = connection.createStatement()) {
+                ResultSet resultSet = statement.executeQuery(query);
+                fillDataFromResultSet(resultSet, true);
+                resultSet.close();
+                fetchMoreModelData(model, true);
+            } catch (SQLException e) {
+                LOG.log(Level.ERROR, e);
+            } finally {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    LOG.log(Level.ERROR, e);
+                }
+            }
+            return true;
+
+        }
+        return false;
+    }
     
-    public void scrollDataDown(DefaultTableModel model, int rowsFetch) {
+    public boolean scrollDataDown(DefaultTableModel model, int rowsFetch) {
         if (currentFirstRowNumber + visibleRowsCount < totalRowsCount
                 && totalRowsCount > visibleRowsCount) {
             long offset = currentFirstRowNumber + visibleRowsCount - 1;
@@ -245,8 +271,10 @@ public abstract class AbstractDataTableModel<T extends Object> {
                     LOG.log(Level.ERROR, e);
                 }
             }
+            return true;
 
         }
+        return false;
     }
 
     public int getVisibleRowsCount() {

@@ -27,7 +27,7 @@ public class DataTableView extends JFrame {
 
     private final transient AbstractDataTableModel<?> model;
     private JTable dataTable;
-    private int oldVPos = 0;
+    private int oldVPos = 20;
 
     /**
      * Create the panel.
@@ -44,7 +44,7 @@ public class DataTableView extends JFrame {
 
         JScrollPane scrollPane = new JScrollPane();
         add(scrollPane, BorderLayout.CENTER);
-
+        
         dataTable = new JTable();
         dataTable.setModel(new DefaultTableModel(
                 new Object[][]{
@@ -71,17 +71,23 @@ public class DataTableView extends JFrame {
     }
 
     private void scrollUp(AdjustmentEvent e) {
+        JScrollBar scrollBar = (JScrollBar) e.getAdjustable();
+        int rowsFetch = - (e.getValue() - oldVPos) / dataTable.getRowHeight();        
+        
+        if (model.scrollDataUp((DefaultTableModel) dataTable.getModel(), rowsFetch)) {
+            dataTable.updateUI();
+            scrollBar.setValue(oldVPos);            
+        }
     }
 
     private void scrollDown(AdjustmentEvent e) {
         JScrollBar scrollBar = (JScrollBar) e.getAdjustable();
-        int extent = scrollBar.getModel().getExtent();
-        int maximum = scrollBar.getModel().getMaximum();
         int rowsFetch = (e.getValue() - oldVPos) / dataTable.getRowHeight();        
         
-        model.scrollDataDown((DefaultTableModel) dataTable.getModel(), rowsFetch);                
-        dataTable.updateUI();
-        scrollBar.setValue(dataTable.getHeight() / 2);
+        if (model.scrollDataDown((DefaultTableModel) dataTable.getModel(), rowsFetch)) {
+            dataTable.updateUI();
+            scrollBar.setValue(oldVPos);            
+        }
     }
 
     public void reloadDataTable() {
