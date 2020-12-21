@@ -10,7 +10,7 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
-import org.alex.sqliteapp.db.DataTableModel;
+import org.alex.sqliteapp.db.AbstractDataTableModel;
 
 import javax.swing.table.DefaultTableModel;
 import org.alex.sqliteapp.util.EntityThrowable;
@@ -25,7 +25,7 @@ public class DataTableView extends JFrame {
     private static final long serialVersionUID = -6001705584757283061L;
     private static final Logger LOG = Logger.getLogger(DataTableView.class);
 
-    private final transient DataTableModel<?> model;
+    private final transient AbstractDataTableModel<?> model;
     private JTable dataTable;
     private int oldVPos = 0;
 
@@ -34,7 +34,7 @@ public class DataTableView extends JFrame {
      *
      * @param model
      */
-    public DataTableView(DataTableModel<?> model) {
+    public DataTableView(AbstractDataTableModel<?> model) {
         initGUI();
         this.model = model;
     }
@@ -57,7 +57,7 @@ public class DataTableView extends JFrame {
         ));
         scrollPane.setViewportView(dataTable);
         scrollPane.getVerticalScrollBar().addAdjustmentListener(
-                (e) -> {
+                e -> {
                     int vPos = scrollPane.getVerticalScrollBar().getValue();
                     if (vPos != oldVPos) {
                         if (vPos > oldVPos) {
@@ -77,18 +77,11 @@ public class DataTableView extends JFrame {
         JScrollBar scrollBar = (JScrollBar) e.getAdjustable();
         int extent = scrollBar.getModel().getExtent();
         int maximum = scrollBar.getModel().getMaximum();
-        if (extent + e.getValue() == maximum) {
-            
-            Thread thread = new Thread(() -> {
-                model.scrollDataDown();
-                
-                model.getModel().fireTableDataChanged();
-                dataTable.setModel(model.getModel());
-                dataTable.updateUI();
-            });
-            
-            thread.start();
-        }
+        int rowsFetch = (e.getValue() - oldVPos) / dataTable.getRowHeight();        
+        
+        model.scrollDataDown((DefaultTableModel) dataTable.getModel(), rowsFetch);                
+        dataTable.updateUI();
+        scrollBar.setValue(dataTable.getHeight() / 2);
     }
 
     public void reloadDataTable() {
