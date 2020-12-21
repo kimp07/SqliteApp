@@ -24,7 +24,6 @@ public abstract class AbstractDataTableModel<T extends Object> {
 
     private final Class<T> entityClass;
     private static final int DEFAULT_VISIBLE_ROWS_COUNT = 80;
-    private static final int CACHED_ROWS_COUNT = 100;
     private String querySelectAll;
     private String queryCountAll;
 

@@ -1,6 +1,5 @@
 package org.alex.sqlite.entity;
 
-import java.util.List;
 import org.alex.sqliteapp.db.AbstractDataTableModel;
 
 /**

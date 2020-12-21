@@ -27,7 +27,7 @@ public class DataTableView extends JFrame {
 
     private final transient AbstractDataTableModel<?> model;
     private JTable dataTable;
-    private int oldVPos = 20;
+    private static final int SCROLL_POS = 20;
 
     /**
      * Create the panel.
@@ -59,8 +59,8 @@ public class DataTableView extends JFrame {
         scrollPane.getVerticalScrollBar().addAdjustmentListener(
                 e -> {
                     int vPos = scrollPane.getVerticalScrollBar().getValue();
-                    if (vPos != oldVPos) {
-                        if (vPos > oldVPos) {
+                    if (vPos != SCROLL_POS) {
+                        if (vPos > SCROLL_POS) {
                             scrollDown(e);
                         } else {
                             scrollUp(e);
@@ -72,21 +72,21 @@ public class DataTableView extends JFrame {
 
     private void scrollUp(AdjustmentEvent e) {
         JScrollBar scrollBar = (JScrollBar) e.getAdjustable();
-        int rowsFetch = - (e.getValue() - oldVPos) / dataTable.getRowHeight();        
+        int rowsFetch = - (e.getValue() - SCROLL_POS) / dataTable.getRowHeight();        
         
         if (model.scrollDataUp((DefaultTableModel) dataTable.getModel(), rowsFetch)) {
             dataTable.updateUI();
-            scrollBar.setValue(oldVPos);            
+            scrollBar.setValue(SCROLL_POS);            
         }
     }
 
     private void scrollDown(AdjustmentEvent e) {
         JScrollBar scrollBar = (JScrollBar) e.getAdjustable();
-        int rowsFetch = (e.getValue() - oldVPos) / dataTable.getRowHeight();        
+        int rowsFetch = (e.getValue() - SCROLL_POS) / dataTable.getRowHeight();        
         
         if (model.scrollDataDown((DefaultTableModel) dataTable.getModel(), rowsFetch)) {
             dataTable.updateUI();
-            scrollBar.setValue(oldVPos);            
+            scrollBar.setValue(SCROLL_POS);            
         }
     }
 
