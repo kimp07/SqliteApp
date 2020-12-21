@@ -20,7 +20,7 @@ public class Good implements Entity {
     private Integer vat;
     @EntityField(fieldName = "BARCODE")
     private String barCode;
-
+        
     public Good() {
     }
 
@@ -63,6 +63,5 @@ public class Good implements Entity {
     public void setBarCode(String barCode) {
         this.barCode = barCode;
     }
-;
 
 }
