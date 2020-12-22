@@ -113,12 +113,7 @@ public abstract class AbstractDataTableModel<T extends Object> {
                             } else if (fieldType.equals(Boolean.class)) {
                                 field.set(entityObject, Boolean.valueOf(dataValue.toString()));
                             } else {
-                                try {
-                                    field.set(entityObject, new String(rs.getString(fieldName).getBytes(DBConnection.ENCODING))); // String.valueOf(dataValue));
-                                } catch (UnsupportedEncodingException e) {
-                                    
-                                }
-                                
+                                field.set(entityObject, String.valueOf(dataValue.toString())); // String.valueOf(dataValue));
                             }
                         }
                     }
