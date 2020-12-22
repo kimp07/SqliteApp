@@ -1,5 +1,6 @@
 package org.alex.sqliteapp.db;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
@@ -112,7 +113,12 @@ public abstract class AbstractDataTableModel<T extends Object> {
                             } else if (fieldType.equals(Boolean.class)) {
                                 field.set(entityObject, Boolean.valueOf(dataValue.toString()));
                             } else {
-                                field.set(entityObject, String.valueOf(dataValue));
+                                try {
+                                    field.set(entityObject, new String(rs.getString(fieldName).getBytes(DBConnection.ENCODING))); // String.valueOf(dataValue));
+                                } catch (UnsupportedEncodingException e) {
+                                    
+                                }
+                                
                             }
                         }
                     }

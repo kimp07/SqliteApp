@@ -16,7 +16,9 @@ public class DBConnection {
     private static final String CONNECTION_URL = "jdbc:sqlite:msalers.sqlite";
 
     private static final Logger LOG = Logger.getLogger(DBConnection.class);
-
+    
+    public static final String ENCODING = "UTF-8";
+    
     /**
      * Constructor
      */
